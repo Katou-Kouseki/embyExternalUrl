@@ -171,14 +171,14 @@ function getRouteMode(r, filePath, isAlistRes, notLocal) {
  */
 function isProxy(r, proxyRules, filePath, isAlistRes, notLocal) {
   const disableRedirectRule = proxyRules;
-  const mountPath = config.embyMountPath ?? [];
+  const mountPath = config.mediaMountPath ?? [];
   if (!isAlistRes) {
-    // exact, local file not xxxMountPath first
+    // exact, local file not mediaMountPath first
     if (mountPath.every(path => path && !filePath.startsWith(path) && !notLocal)) {
       ngx.log(ngx.WARN, `hit proxy, not mountPath first: ${JSON.stringify(mountPath)}`);
       return true;
     }
-    // indeterminate, regard notLocal and xxxMountPath empty default as local file
+    // indeterminate, regard notLocal and mediaMountPath empty default as local file
     if ((mountPath.length === 0 || mountPath.every(p => p.length === 0)) && !notLocal) {
       ngx.log(ngx.WARN, `hit proxy, maybe is localFile`);
       return true;
@@ -504,12 +504,13 @@ function getDeviceId(rArgs) {
  * http://mydomain:19798/static/http/mydomain:19798/False//AList/xxx.mkv
  * 2.AList
  * http://mydomain:5244/d/AList/xxx.mkv
+ * see: https://regex101.com/r/Gd3JUH/1
  * @param {String} url full url
  * @returns "/AList/xxx.mkv" or "AList/xxx.mkv" or ""
  */
 function getFilePathPart(url) {
-  const matches = url.match(/\/False\/(.*)|\/d\/(.*)/);
-  return matches && matches[1] ? matches[1] : "";
+  const matches = url.match(/(?:\/False\/|\/d\/)(.*)/g);
+  return matches ? matches[1] : "";
 }
 
 /**
